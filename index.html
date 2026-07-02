@@ -34,34 +34,21 @@
         }
         .content { padding: 20px; }
 
-        .header { 
-            display: grid; 
-            grid-template-columns: 140px 1fr; 
-            gap: 12px 20px; 
-            margin-bottom: 20px; 
-            background: #f8fafc; 
-            padding: 15px; 
-            border-radius: 10px; 
-        }
-        .generator {
-            background: #eff6ff;
-            border: 2px solid #3b82f6;
-            padding: 15px;
-            border-radius: 10px;
+        .header, .generator {
             margin-bottom: 20px;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 10px;
         }
-        .generator-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 12px;
-        }
+        .header { display: grid; grid-template-columns: 140px 1fr; gap: 12px 20px; }
+        .generator { background: #eff6ff; border: 2px solid #3b82f6; }
 
         .table-wrapper { overflow-x: auto; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         table {
             width: 100%;
             border-collapse: collapse;
             min-width: 800px;
-            display: none;
+            display: none; /* Sembunyikan otomatis */
         }
         table.show { display: table; }
         th { background: linear-gradient(90deg, #1e3a8a, #3b82f6); color: white; padding: 12px 8px; }
@@ -99,7 +86,7 @@
 
             <div class="generator">
                 <h3>🚀 Quick Generator</h3>
-                <div class="generator-grid">
+                <div class="generator-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); gap:12px;">
                     <input type="text" id="genShipper" placeholder="Shipper">
                     <input type="number" id="genAwb" placeholder="AWB">
                     <input type="number" id="genColly" placeholder="COLLY">
@@ -113,8 +100,9 @@
                 </div>
             </div>
 
-            <button onclick="toggleTable()" style="width:100%; padding:14px; background:#64748b; color:white; border:none; border-radius:8px; margin-bottom:15px; font-weight:bold;">
-                👁️ Tampilkan / Sembunyikan Tabel
+            <!-- Tombol Tampilkan Tabel -->
+            <button onclick="toggleTable()" id="toggleBtn" style="width:100%; padding:14px; background:#334155; color:white; border:none; border-radius:8px; margin-bottom:15px; font-weight:bold;">
+                👁️ Tampilkan Tabel
             </button>
 
             <div class="table-wrapper">
@@ -160,7 +148,11 @@
 
         function toggleTable() {
             tableVisible = !tableVisible;
-            document.getElementById('pickupTable').classList.toggle('show', tableVisible);
+            const table = document.getElementById('pickupTable');
+            table.classList.toggle('show', tableVisible);
+            
+            const btn = document.getElementById('toggleBtn');
+            btn.textContent = tableVisible ? "🙈 Sembunyikan Tabel" : "👁️ Tampilkan Tabel";
         }
 
         function addRow(data = {}) {
@@ -178,7 +170,6 @@
             `;
             tbody.appendChild(row);
             calculateTotal();
-            if (!tableVisible) toggleTable();
         }
 
         function generateRow() {
@@ -246,14 +237,9 @@
             XLSX.writeFile(wb, `Pick_Up_Order_${new Date().toISOString().slice(0,10)}.xlsx`);
         }
 
-        // PDF PORTRAIT
         function exportToPDF() {
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({ 
-                orientation: 'portrait',   // Diubah ke Portrait
-                unit: 'pt', 
-                format: 'a4' 
-            });
+            const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
 
             doc.setFont("helvetica", "bold");
             doc.setFontSize(20);
@@ -284,22 +270,14 @@
                 head: [['NO', 'SHIPPER', 'AWB', 'COLLY', 'WEIGHT', 'REMARKS', 'SIGNATURE']],
                 body: tableData,
                 startY: 190,
-                styles: { fontSize: 9, fontStyle: 'bold' },
-                headStyles: { fillColor: [30,30,30] },
-                columnStyles: {
-                    0: { cellWidth: 30 },
-                    1: { cellWidth: 90 },
-                    2: { cellWidth: 50 },
-                    3: { cellWidth: 50 },
-                    4: { cellWidth: 50 },
-                    5: { cellWidth: 80 },
-                    6: { cellWidth: 70 }
-                }
+                styles: { fontSize: 10, fontStyle: 'bold' },
+                headStyles: { fillColor: [30,30,30] }
             });
 
             doc.save(`Pick_Up_Order_${new Date().toISOString().slice(0,10)}.pdf`);
         }
 
+        // Mulai dengan tabel tersembunyi
         window.onload = () => {
             for (let i = 0; i < 3; i++) addRow({});
         };
